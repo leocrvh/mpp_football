@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MPP League + World Cup 2026</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        background: #0b1220;
+        color: #f8fafc;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        padding: 16px;
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+      .card {
+        background: #111827;
+        border: 1px solid #1f2937;
+        border-radius: 10px;
+        padding: 12px;
+        overflow: auto;
+      }
+      h1, h2 { margin: 0 0 12px 0; }
+      h1 { font-size: 1.35rem; }
+      h2 { font-size: 1.1rem; }
+      .meta { color: #9ca3af; font-size: 0.9rem; margin-bottom: 10px; }
+      .match {
+        display: grid;
+        grid-template-columns: 1.1fr 0.8fr 1.1fr;
+        gap: 8px;
+        border-bottom: 1px solid #1f2937;
+        padding: 8px 0;
+      }
+      .match:last-child { border-bottom: 0; }
+      .center { text-align: center; color: #93c5fd; }
+      iframe {
+        width: 100%;
+        min-height: 78vh;
+        border: 0;
+        background: #fff;
+        border-radius: 8px;
+      }
+      @media (max-width: 1100px) {
+        .layout { grid-template-columns: 1fr; }
+        iframe { min-height: 50vh; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <section class="card">
+        <h1>MPP Challenge League</h1>
+        <div class="meta" id="mpp-meta">Loading league snapshot…</div>
+        <iframe id="mpp-frame" src="./data/mpp_league.html" title="MPP League"></iframe>
+      </section>
+
+      <section class="card">
+        <h2>FIFA World Cup 2026 Schedule</h2>
+        <div class="meta" id="wc-meta">Loading schedule…</div>
+        <div id="matches"></div>
+      </section>
+    </div>
+
+    <script>
+      function asArray(value) {
+        return Array.isArray(value) ? value : [];
+      }
+
+      function detectMatches(data) {
+        if (!data) return [];
+        if (Array.isArray(data)) return data;
+        if (Array.isArray(data.matches)) return data.matches;
+        if (Array.isArray(data.data)) return data.data;
+        if (data.data && typeof data.data === 'object') return detectMatches(data.data);
+        const rounds = asArray(data.rounds).flatMap((round) => asArray(round.matches));
+        const groups = asArray(data.groups).flatMap((group) => asArray(group.matches));
+        return [...rounds, ...groups];
+      }
+
+      function renderMatches(matches) {
+        const host = document.getElementById('matches');
+        if (!matches.length) {
+          host.textContent = 'No schedule entries found in worldcup.json.';
+          return;
+        }
+
+        host.innerHTML = matches.slice(0, 120).map((m) => {
+          const home = m.home_team || m.homeTeam || m.team1 || m.home || 'TBD';
+          const away = m.away_team || m.awayTeam || m.team2 || m.away || 'TBD';
+          const when = m.datetime || m.date || m.matchDate || m.kickoff || 'TBD';
+          const stage = m.stage || m.round || m.group || m.phase || '';
+          return `<div class="match"><div>${home}</div><div class="center">${when}${stage ? `<br>${stage}` : ''}</div><div>${away}</div></div>`;
+        }).join('');
+      }
+
+      async function loadWorldCup() {
+        const meta = document.getElementById('wc-meta');
+        try {
+          const response = await fetch('./data/worldcup.json', { cache: 'no-store' });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const payload = await response.json();
+          const matches = detectMatches(payload);
+          meta.textContent = `Entries: ${matches.length}. Updated ${new Date().toLocaleString()}`;
+          renderMatches(matches);
+        } catch (error) {
+          meta.textContent = `Could not load worldcup.json: ${error.message}`;
+        }
+      }
+
+      function init() {
+        document.getElementById('mpp-meta').textContent = 'Local snapshot: data/mpp_league.html';
+        loadWorldCup();
+        setInterval(() => window.location.reload(), 60 * 60 * 1000);
+      }
+
+      init();
+    </script>
+  </body>
+</html>

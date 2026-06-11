@@ -1,13 +1,9 @@
 {
   "name": "mpp-tv-updater",
   "version": "1.0.0",
-  "description": "Fetch standings from mpp.football and world cup schedule, output JSON for a simple TV page",
-  "main": "scripts/fetch-standings.js",
+  "description": "GitHub Pages updater for MPP league + World Cup 2026 schedule",
+  "main": "scripts/update-data.js",
   "scripts": {
-    "fetch": "node scripts/fetch-standings.js"
-  },
-  "dependencies": {
-    "axios": "^1.6.0",
-    "cheerio": "^1.0.0-rc.12"
+    "update-data": "node scripts/update-data.js"
   }
 }
