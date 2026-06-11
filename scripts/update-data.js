@@ -9,6 +9,8 @@ const ROOT = path.resolve(__dirname, '..');
 const MPP_URL = 'https://mpp.football/leagues/mpp_challenge_UC8MVG4F';
 const WORLDCUP_URL = 'https://raw.githubusercontent.com/mjwebmaster/world-cup-2026-schedule-data/main/world-cup-2026-schedule.json';
 const GH_PAGES_BRANCH = 'gh-pages';
+const PLACEHOLDER_MPP = path.join(ROOT, 'site', 'data', 'mpp_league.html');
+const PLACEHOLDER_WORLDCUP = path.join(ROOT, 'site', 'data', 'worldcup.json');
 
 function run(command, cwd = ROOT) {
   return execSync(command, { cwd, stdio: 'pipe', encoding: 'utf8' }).trim();
@@ -48,6 +50,19 @@ async function fetchText(url) {
   }
 
   return response.text();
+}
+
+function readText(filePath) {
+  return fs.readFileSync(filePath, 'utf8');
+}
+
+async function fetchTextWithFallback(url, fallbackPath) {
+  try {
+    return await fetchText(url);
+  } catch (error) {
+    console.warn(`Could not fetch ${url}. Using fallback ${path.relative(ROOT, fallbackPath)}.`);
+    return readText(fallbackPath);
+  }
 }
 
 function writeFile(filePath, contents) {
@@ -114,8 +129,8 @@ async function main() {
     }
 
     const [leagueHtml, worldCupText] = await Promise.all([
-      fetchText(MPP_URL),
-      fetchText(WORLDCUP_URL)
+      fetchTextWithFallback(MPP_URL, PLACEHOLDER_MPP),
+      fetchTextWithFallback(WORLDCUP_URL, PLACEHOLDER_WORLDCUP)
     ]);
 
     let worldCupData;
