@@ -1,6 +1,6 @@
 {
   "source": "https://raw.githubusercontent.com/mjwebmaster/world-cup-2026-schedule-data/main/world-cup-2026-schedule.json",
-  "fetchedAt": "2026-09-21T20:52:43.058Z",
+  "fetchedAt": "2026-09-21T23:55:31.260Z",
   "data": {
     "name": "World Cup 2026 Schedule",
     "description": "Free World Cup 2026 schedule data in JSON, CSV and ICS formats.",
